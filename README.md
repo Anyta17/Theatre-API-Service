@@ -1,6 +1,7 @@
-# Theatre API Service 
+# Theatre API Service
 
-Django-rest-framework project allows visitors of the Theatre to make Reservations online and choose needed seats, without going physically to the Theatre
+Django-rest-framework project allows visitors of the Theatre to make Reservations online and choose needed seats,
+without going physically to the Theatre
 
 ## Setup Instructions
 
@@ -15,7 +16,7 @@ To set up the project locally, follow these steps:
 2. Navigate to the project directory:
 
     ```
-    cd theatre_service
+    cd Theatre-API-Service
     ```
 
 3. Create a virtual environment and activate it:
@@ -26,7 +27,7 @@ To set up the project locally, follow these steps:
     ```
 
 4. Install the required dependencies:
-    
+
     ```
     pip install -r requirements.txt
     ```
@@ -42,7 +43,7 @@ To set up the project locally, follow these steps:
    ```
    python manage.py runserver
    ```
-   
+
 # API Endpoints
 
 The API provides the following endpoints:
