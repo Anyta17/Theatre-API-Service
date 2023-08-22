@@ -1,9 +1,7 @@
 from django.db.models import F, Count
 from rest_framework import mixins, viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
 
 from theatre.models import Genre, Actor, Play, Performance, Reservation, TheatreHall
@@ -97,20 +95,6 @@ class PlayViewSet(
 
         return PlaySerializer
 
-    @action(
-        methods=["POST"],
-        detail=True,
-        url_path="upload-image",
-        permission_classes=[IsAdminUser]
-    )
-    def upload_image(self, request, pk=None):
-        movie = self.get_object()
-        serializer = self.get_serializer(movie, data=request.data)
-
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
 
 class PerformanceViewSet(viewsets.ModelViewSet):
     queryset = Performance.objects.all()
@@ -128,7 +112,7 @@ class PerformanceViewSet(viewsets.ModelViewSet):
                 .annotate(
                     tickets_available=(
                         F("theatre_hall__rows") * F("theatre_hall__seats_in_row")
-                    ) - Count("tickets")
+                        ) - Count("tickets")
                 )
             )
 

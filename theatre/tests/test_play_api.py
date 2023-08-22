@@ -5,10 +5,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from theatre.models import Play, Genre, Actor
+from theatre.models import Genre, Actor, Play
 from theatre.serializers import PlayListSerializer, PlayDetailSerializer
 
-THEATRE_URL = reverse("theatre:play-list")
+PLAY_URL = reverse("theatre:play-list")
 
 
 def detail_url(play_id: int):
@@ -30,7 +30,7 @@ class UnauthenticatedPlayApiTests(TestCase):
         self.client = APIClient()
 
     def test_auth_required(self):
-        res = self.client.get(THEATRE_URL)
+        res = self.client.get(PLAY_URL)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -45,7 +45,7 @@ class AuthenticatedPlayApiTests(TestCase):
 
         self.genre, _ = Genre.objects.get_or_create(name="novel")
 
-    def test_list_movies(self):
+    def test_list_plays(self):
         sample_play()
         theatre_with_genre = sample_play()
         theatre_with_actor = sample_play()
@@ -55,7 +55,7 @@ class AuthenticatedPlayApiTests(TestCase):
         theatre_with_genre.genres.add(self.genre)
         theatre_with_actor.actors.add(actor)
 
-        res = self.client.get(THEATRE_URL)
+        res = self.client.get(PLAY_URL)
 
         plays = Play.objects.all()
         serializer = PlayListSerializer(plays, many=True)
@@ -73,7 +73,7 @@ class AuthenticatedPlayApiTests(TestCase):
 
         theatre2 = sample_play(title="Theatre without genres")
 
-        res = self.client.get(THEATRE_URL, {"genres": f"{self.genre.id}", "actors": f"{actor1.id}"})
+        res = self.client.get(PLAY_URL, {"genres": f"{self.genre.id}", "actors": f"{actor1.id}"})
 
         serializer1 = PlayListSerializer(theatre1)
         serializer2 = PlayListSerializer(theatre2)
@@ -100,16 +100,16 @@ class AuthenticatedPlayApiTests(TestCase):
             "description": "test",
         }
 
-        res = self.client.post(THEATRE_URL, payload)
+        res = self.client.post(PLAY_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class AdminPlayApiTests(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            "admin@addmin.com",
-            "testpassword",
+        self.user, _ = get_user_model().objects.get_or_create(
+            email="admin@addmin.com",
+            defaults={"password": "testpassword"},
             is_staff=True,
         )
         self.client.force_authenticate(self.user)
@@ -117,15 +117,14 @@ class AdminPlayApiTests(TestCase):
         self.genre, _ = Genre.objects.get_or_create(name="novel")
         self.actor = Actor.objects.create(first_name="John", last_name="Dg")
 
-    def test_movie_created(self):
+    def test_theatre_created(self):
         payload = {
             "title": "Calvary",
             "description": "test",
-            "genres": self.genre.id,
+            "genres": [self.genre.id],
             "actors": [self.actor.id]
         }
 
-        res = self.client.post(THEATRE_URL, payload)
+        res = self.client.post(PLAY_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-
